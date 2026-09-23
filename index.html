@@ -1,22 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Markdown Editor</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Marked.js parser via CDN -->
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Highlight.js Themes (Light & Dark) -->
+  <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" disabled>
+  <!-- Marked.js Parser -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Highlight.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
 <body>
   <header>
-    <h1>Markdown Editor</h1>
-    <button id="clear-btn">Clear</button>
+    <div class="logo">
+      <i class="fa-brands fa-markdown"></i>
+      <h1>Markdown</h1>
+    </div>
+    <div class="actions">
+      <button id="copy-html-btn" class="btn btn-secondary" title="Copy HTML to Clipboard">
+        <i class="fa-solid fa-copy"></i>
+        <span>Copy HTML</span>
+      </button>
+      <button id="export-md-btn" class="btn btn-secondary" title="Export as Markdown">
+        <i class="fa-solid fa-file-arrow-down"></i>
+        <span>Export .md</span>
+      </button>
+      <button id="export-html-btn" class="btn btn-secondary" title="Export as HTML">
+        <i class="fa-solid fa-file-code"></i>
+        <span>Export .html</span>
+      </button>
+      <button id="theme-btn" class="icon-btn" title="Toggle Theme">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+      <button id="clear-btn" class="btn btn-danger">
+        <i class="fa-solid fa-trash-can"></i>
+        <span>Clear</span>
+      </button>
+    </div>
   </header>
-  <main class="editor-container">
-    <textarea id="editor" placeholder="Type your Markdown text here..."></textarea>
-    <div id="preview" class="markdown-body"></div>
+
+  <main class="editor-wrapper">
+    <div class="editor-container">
+      <textarea id="editor" placeholder="Type your Markdown text here..."></textarea>
+      <div id="resizer" class="resizer" title="Drag to resize"></div>
+      <div id="preview" class="markdown-body"></div>
+    </div>
   </main>
+
+  <footer class="status-bar">
+    <div class="status-pill">
+      <i class="fa-solid fa-file-lines"></i>
+      <span id="word-count">0 words</span>
+    </div>
+    <div class="status-pill">
+      <i class="fa-solid fa-font"></i>
+      <span id="char-count">0 characters</span>
+    </div>
+  </footer>
+
+  <!-- Warning Modal -->
+  <div id="clear-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <i class="fa-solid fa-triangle-exclamation modal-icon"></i>
+        <h3>Clear document?</h3>
+      </div>
+      <p>Are you sure you want to delete all content? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button id="cancel-clear" class="btn btn-secondary">Cancel</button>
+        <button id="confirm-clear" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

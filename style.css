@@ -1,3 +1,39 @@
+:root {
+  --bg-main: #f1f5f9;
+  --bg-panel: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --header-bg: #0f172a;
+  --header-text: #ffffff;
+  
+  --accent-danger: #ef4444;
+  --accent-danger-hover: #dc2626;
+  --btn-secondary-bg: #f1f5f9;
+  --btn-secondary-text: #334155;
+  --btn-secondary-hover: #e2e8f0;
+  
+  --resizer-bg: #cbd5e1;
+  --resizer-active: #3b82f6;
+  --modal-overlay: rgba(15, 23, 42, 0.5);
+  --card-radius: 12px;
+  --btn-radius: 8px;
+}
+
+[data-theme="dark"] {
+  --bg-main: #090d16;
+  --bg-panel: #111827;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --border-color: #1f2937;
+  --header-bg: #111827;
+  
+  --btn-secondary-bg: #1f2937;
+  --btn-secondary-text: #f3f4f6;
+  --btn-secondary-hover: #374151;
+  --resizer-bg: #1f2937;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,37 +45,107 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f6f8fa;
-  color: #24292f;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow: hidden;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 1.5rem;
-  background-color: #1f2328;
-  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--header-bg);
+  color: var(--header-text);
+  border-bottom: 1px solid var(--border-color);
 }
 
-header button {
-  background-color: #da3633;
-  color: #ffffff;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.logo i {
+  font-size: 1.5rem;
+  color: #38bdf8;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--btn-radius);
   border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
   font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-header button:hover {
-  background-color: #b62320;
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-danger {
+  background-color: var(--accent-danger);
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: var(--accent-danger-hover);
+}
+
+.btn-secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+}
+
+.btn-secondary:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--header-text);
+  font-size: 1.1rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--btn-radius);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Outer Wrapper with padding and rounded corners */
+.editor-wrapper {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  height: calc(100vh - 100px);
 }
 
 .editor-container {
   display: flex;
-  flex: 1;
+  height: 100%;
+  position: relative;
+  background-color: var(--bg-panel);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
   overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 #editor, #preview {
@@ -47,34 +153,143 @@ header button:hover {
   height: 100%;
   padding: 1.5rem;
   overflow-y: auto;
+  background-color: var(--bg-panel);
+  color: var(--text-main);
 }
 
 #editor {
   border: none;
-  border-right: 1px solid #d0d7de;
   outline: none;
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.6;
   resize: none;
-  background-color: #ffffff;
+}
+
+.resizer {
+  width: 6px;
+  background-color: var(--resizer-bg);
+  cursor: col-resize;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+}
+
+.resizer:hover, .resizer.dragging {
+  background-color: var(--resizer-active);
 }
 
 #preview {
-  background-color: #ffffff;
   line-height: 1.6;
 }
 
+/* Scrollbars Styling */
+#editor::-webkit-scrollbar, #preview::-webkit-scrollbar {
+  width: 8px;
+}
+
+#editor::-webkit-scrollbar-thumb, #preview::-webkit-scrollbar-thumb {
+  background: var(--resizer-bg);
+  border-radius: 10px;
+}
+
+/* Status Bar with Rounded Pills */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  background-color: var(--header-bg);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  user-select: none;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  color: var(--text-muted);
+}
+
+.status-pill i {
+  font-size: 0.75rem;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 1000;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  background-color: var(--bg-panel);
+  color: var(--text-main);
+  padding: 1.5rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.modal-icon {
+  color: var(--accent-danger);
+  font-size: 1.25rem;
+}
+
+.modal-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
 @media (max-width: 768px) {
+  .editor-wrapper {
+    height: calc(100vh - 110px);
+    padding: 0.5rem;
+  }
   .editor-container {
     flex-direction: column;
   }
   #editor, #preview {
-    width: 100%;
+    width: 100% !important;
     height: 50%;
   }
-  #editor {
-    border-right: none;
-    border-bottom: 1px solid #d0d7de;
+  .resizer {
+    display: none;
   }
 }
