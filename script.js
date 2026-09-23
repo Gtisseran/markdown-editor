@@ -2,7 +2,7 @@ const editor = document.getElementById("editor");
 const preview = document.getElementById("preview");
 const resizer = document.getElementById("resizer");
 const themeBtn = document.getElementById("theme-btn");
-const themeIcon = themeBtn.querySelector("i");
+const themeIcon = themeBtn ? themeBtn.querySelector("i") : null;
 
 const clearBtn = document.getElementById("clear-btn");
 const clearModal = document.getElementById("clear-modal");
@@ -19,49 +19,106 @@ const hljsDark = document.getElementById("hljs-dark");
 const wordCountEl = document.getElementById("word-count");
 const charCountEl = document.getElementById("char-count");
 
-// 1. Initial Content & Persistence
-const defaultText = `# Welcome to Markdown Studio\n\nType on the left side, and watch the live preview on the right.\n\n## Syntax Highlighting Example\n\n\`\`\`javascript\nfunction greet(name) {\n  console.log(\`Hello, \${name}!\`);\n}\n\ngreet("World");\n\`\`\`\n\n\`\`\`python\ndef add(a, b):\n    return a + b\n\nprint(add(5, 3))\n\`\`\``;
+const safeStorage = {
+  get(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Ignore storage issues in private browsing / restricted environments.
+    }
+  },
+};
 
-const savedContent = localStorage.getItem("markdown_content") || defaultText;
+const defaultText = `# Welcome to Markdown Studio
+
+Type on the left side, and watch the live preview on the right.
+
+## Syntax Highlighting Example
+
+\`\`\`javascript
+function greet(name) {
+  console.log(\`Hello, \${name}!\`);
+}
+
+greet("World");
+\`\`\`
+
+\`\`\`python
+def add(a, b):
+    return a + b
+
+print(add(5, 3))
+\`\`\``;
+
+if (!editor || !preview) {
+  throw new Error("Required editor elements were not found.");
+}
+
+if (window.marked) {
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+  });
+}
+
+const savedContent = safeStorage.get("markdown_content") || defaultText;
 editor.value = savedContent;
 
-// Word and Character Counter
 function updateStats() {
   const text = editor.value;
   const chars = text.length;
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
 
-  wordCountEl.textContent = `${words} ${words === 1 ? "word" : "words"}`;
-  charCountEl.textContent = `${chars} ${chars === 1 ? "character" : "characters"}`;
+  if (wordCountEl) {
+    wordCountEl.textContent = `${words} ${words === 1 ? "word" : "words"}`;
+  }
+
+  if (charCountEl) {
+    charCountEl.textContent = `${chars} ${chars === 1 ? "character" : "characters"}`;
+  }
 }
 
-// Render Markdown, apply syntax highlighting, update counters
 function renderMarkdown() {
   const text = editor.value;
-  preview.innerHTML = marked.parse(text);
-  
-  preview.querySelectorAll("pre code").forEach((block) => {
-    hljs.highlightElement(block);
-  });
+
+  if (window.marked) {
+    preview.innerHTML = marked.parse(text);
+  } else {
+    preview.textContent = text;
+  }
+
+  if (window.hljs) {
+    preview.querySelectorAll("pre code").forEach((block) => {
+      window.hljs.highlightElement(block);
+    });
+  }
 
   updateStats();
-  localStorage.setItem("markdown_content", text);
+  safeStorage.set("markdown_content", text);
 }
 
 editor.addEventListener("input", renderMarkdown);
 
-// 2. Resizer Logic
 let isResizing = false;
 
-resizer.addEventListener("mousedown", () => {
-  isResizing = true;
-  resizer.classList.add("dragging");
-  document.body.style.cursor = "col-resize";
-  document.body.style.userSelect = "none";
-});
+if (resizer) {
+  resizer.addEventListener("mousedown", () => {
+    isResizing = true;
+    resizer.classList.add("dragging");
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  });
+}
 
 window.addEventListener("mousemove", (e) => {
-  if (!isResizing) return;
+  if (!isResizing || !resizer) return;
   const containerRect = document.querySelector(".editor-container").getBoundingClientRect();
   const relativeX = e.clientX - containerRect.left;
   let percentage = (relativeX / containerRect.width) * 100;
@@ -76,56 +133,69 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener("mouseup", () => {
   if (isResizing) {
     isResizing = false;
-    resizer.classList.remove("dragging");
+    if (resizer) {
+      resizer.classList.remove("dragging");
+    }
     document.body.style.cursor = "default";
     document.body.style.userSelect = "auto";
   }
 });
 
-// 3. Theme Switcher Logic
 function setTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("markdown_theme", theme);
+  safeStorage.set("markdown_theme", theme);
 
   if (theme === "dark") {
-    themeIcon.className = "fa-solid fa-sun";
-    hljsLight.disabled = true;
-    hljsDark.disabled = false;
+    if (themeIcon) {
+      themeIcon.className = "fa-solid fa-sun";
+    }
+    if (hljsLight) hljsLight.disabled = true;
+    if (hljsDark) hljsDark.disabled = false;
   } else {
-    themeIcon.className = "fa-solid fa-moon";
-    hljsLight.disabled = false;
-    hljsDark.disabled = true;
+    if (themeIcon) {
+      themeIcon.className = "fa-solid fa-moon";
+    }
+    if (hljsLight) hljsLight.disabled = false;
+    if (hljsDark) hljsDark.disabled = true;
   }
 }
 
-const savedTheme = localStorage.getItem("markdown_theme") || "light";
+const savedTheme = safeStorage.get("markdown_theme") || "light";
 setTheme(savedTheme);
 
-themeBtn.addEventListener("click", () => {
-  const currentTheme = document.documentElement.getAttribute("data-theme");
-  setTheme(currentTheme === "dark" ? "light" : "dark");
-});
+if (themeBtn) {
+  themeBtn.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    setTheme(currentTheme === "dark" ? "light" : "dark");
+  });
+}
 
-// 4. Modal Warning Logic
-clearBtn.addEventListener("click", () => {
-  clearModal.classList.add("active");
-});
+if (clearBtn) {
+  clearBtn.addEventListener("click", () => {
+    clearModal.classList.add("active");
+  });
+}
 
-cancelClearBtn.addEventListener("click", () => {
-  clearModal.classList.remove("active");
-});
+if (cancelClearBtn) {
+  cancelClearBtn.addEventListener("click", () => {
+    clearModal.classList.remove("active");
+  });
+}
 
-clearModal.addEventListener("click", (e) => {
-  if (e.target === clearModal) clearModal.classList.remove("active");
-});
+if (clearModal) {
+  clearModal.addEventListener("click", (e) => {
+    if (e.target === clearModal) clearModal.classList.remove("active");
+  });
+}
 
-confirmClearBtn.addEventListener("click", () => {
-  editor.value = "";
-  renderMarkdown();
-  clearModal.classList.remove("active");
-});
+if (confirmClearBtn) {
+  confirmClearBtn.addEventListener("click", () => {
+    editor.value = "";
+    renderMarkdown();
+    clearModal.classList.remove("active");
+  });
+}
 
-// 5. Export Functionality (.md & .html)
 function downloadFile(filename, content, mimeType) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -138,23 +208,26 @@ function downloadFile(filename, content, mimeType) {
   URL.revokeObjectURL(url);
 }
 
-exportMDBtn.addEventListener("click", () => {
-  const text = editor.value;
-  if (!text.trim()) {
-    alert("There is no content to export!");
-    return;
-  }
-  downloadFile("document.md", text, "text/markdown");
-});
+if (exportMDBtn) {
+  exportMDBtn.addEventListener("click", () => {
+    const text = editor.value;
+    if (!text.trim()) {
+      alert("There is no content to export!");
+      return;
+    }
+    downloadFile("document.md", text, "text/markdown");
+  });
+}
 
-exportHTMLBtn.addEventListener("click", () => {
-  const text = editor.value;
-  if (!text.trim()) {
-    alert("There is no content to export!");
-    return;
-  }
+if (exportHTMLBtn) {
+  exportHTMLBtn.addEventListener("click", () => {
+    const text = editor.value;
+    if (!text.trim()) {
+      alert("There is no content to export!");
+      return;
+    }
 
-  const htmlDocument = `<!DOCTYPE html>
+    const htmlDocument = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -182,35 +255,36 @@ code {
 </style>
 </head>
 <body>
-${marked.parse(text)}
+${window.marked ? marked.parse(text) : text}
 </body>
 </html>`;
 
-  downloadFile("document.html", htmlDocument, "text/html");
-});
+    downloadFile("document.html", htmlDocument, "text/html");
+  });
+}
 
-// 6. Copy HTML Logic
-copyHTMLBtn.addEventListener("click", async () => {
-  const text = editor.value;
-  if (!text.trim()) {
-    alert("There is no content to copy!");
-    return;
-  }
+if (copyHTMLBtn) {
+  copyHTMLBtn.addEventListener("click", async () => {
+    const text = editor.value;
+    if (!text.trim()) {
+      alert("There is no content to copy!");
+      return;
+    }
 
-  const htmlContent = marked.parse(text);
+    const htmlContent = window.marked ? marked.parse(text) : text;
 
-  try {
-    await navigator.clipboard.writeText(htmlContent);
-    const originalContent = copyHTMLBtn.innerHTML;
-    copyHTMLBtn.innerHTML = '<i class="fa-solid fa-check"></i><span>Copied!</span>';
-    
-    setTimeout(() => {
-      copyHTMLBtn.innerHTML = originalContent;
-    }, 2000);
-  } catch (err) {
-    console.error("Failed to copy HTML: ", err);
-  }
-});
+    try {
+      await navigator.clipboard.writeText(htmlContent);
+      const originalContent = copyHTMLBtn.innerHTML;
+      copyHTMLBtn.innerHTML = '<i class="fa-solid fa-check"></i><span>Copied!</span>';
 
-// Initial render
+      setTimeout(() => {
+        copyHTMLBtn.innerHTML = originalContent;
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy HTML: ", err);
+    }
+  });
+}
+
 renderMarkdown();
