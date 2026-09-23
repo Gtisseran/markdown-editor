@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Editor</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Marked.js parser via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Markdown Editor</h1>
+    <button id="clear-btn">Clear</button>
+  </header>
+  <main class="editor-container">
+    <textarea id="editor" placeholder="Type your Markdown text here..."></textarea>
+    <div id="preview" class="markdown-body"></div>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
